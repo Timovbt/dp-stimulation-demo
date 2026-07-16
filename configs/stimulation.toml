@@ -1,0 +1,27 @@
+[speller.screen]
+id = 1
+resolution = [1920, 1080]
+background_color = [ 0, 0, 0,]
+refresh_rate_hz = 60
+full_screen = false
+
+[stimulaton.timing]
+flash_duration = 50
+interval = 500
+
+[speller.stt]
+enabled = false
+width_dva = 2.2
+height_dva = 2.2
+colors = [ "black", "white",]
+
+
+[stimulation.controls]
+continue = [ "c",]
+quit = [ "q", "escape",]
+
+
+[streams]
+marker_stream_name = "stimulation-stream"
+decoder_stream_name = "decoder-stream"
+
