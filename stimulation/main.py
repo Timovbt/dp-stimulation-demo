@@ -7,13 +7,15 @@ import time
 from pathlib import Path
 from fire import Fire
 import psychopy
-from psychopy import event, misc, monitors, visual
+from psychopy import core, event, misc, monitors, visual
 # The modules logger is used everywhere necessary. Note this logger will usually only have a NetworkHandler.
 # If you want to log to the console, you need to add a StreamHandler to it.
 from stimulation.utils.logging import logger
 from pylsl import StreamInfo, StreamOutlet
 from dareplane_utils.stream_watcher.lsl_stream_watcher import StreamWatcher
 import toml
+
+
 class Stimulation(object):
     def __init__(
         self,
@@ -61,12 +63,45 @@ class Stimulation(object):
         )
         self.outlet = StreamOutlet(info)
 
+        self.stim_duration = self.refresh_rate / 60 * 3 #duration of 50ms
+        self.rectangle = visual.rect.Rect(self.window,
+                                          size = [500,500],
+                                          name = 'rectangle',
+                                        )
+
  
     def connect_to_decoder_lsl_stream(self) -> None:
         name = self.cfg["streams"]["decoder_stream_name"]
         logger.info(f'Connecting to decoder stream "{name}".')
         self.decoder_sw = StreamWatcher(name=name)
         self.decoder_sw.connect_to_stream()
+    
+    def run(
+        self, 
+    ) -> None:
+        
+        while True:
+            stimulus_onset = random.randint(33,47) #random duration between 500ms and 750ms
+
+            for i in range(self.refresh_rate):
+                # Check quiting
+                if i % 60 == 0:
+                    if len(event.getKeys(keyList=self.quit_controls)) > 0:
+                        self.quit()
+                        break
+
+                #draw for 50 ms
+                if 0 < i < self.stim_duration:
+                    self.rectangle.draw()
+                    self.log(marker="stimulation_presented")
+
+                if stimulus_onset < i < stimulus_onset + self.stim_duration:
+                    self.rectangle.draw()
+                    self.log(marker="stimulation_presented")
+
+                self.window.flip()
+
+            
 
     def quit(
         self,
@@ -96,15 +131,24 @@ class Stimulation(object):
 
 def start_stimulation_VEP(
     config_path: Path = Path("./configs/stimulation.toml"),  # relative to the project root
-) -> int:
-    cfg = toml.load(config_path)
-    stimulation = Stimulation(cfg) ##
+    ) -> int:
 
-   
+    cfg = toml.load(config_path)
+    stimulation = Stimulation( 
+        screen_resolution=cfg["stimulation"]["screen"]["resolution"],
+        refresh_rate=cfg["stimulation"]["screen"]["refresh_rate_hz"],
+        screen_id=cfg["stimulation"]["screen"]["id"],
+        full_screen=cfg["stimulation"]["screen"]["full_screen"],
+        background_color=cfg["stimulation"]["screen"]["background_color"],
+        marker_stream_name=cfg["streams"]["marker_stream_name"],
+        quit_controls=cfg["stimulation"]["controls"]["quit"],
+        cfg=cfg,
+        ) 
+    
 
     # Wait to start run
     logger.info("Waiting for button press to start")
-    event.waitKeys(keyList=cfg["speller"]["controls"]["continue"])
+    event.waitKeys(keyList=cfg["stimulation"]["controls"]["continue"])
 
     # Log info
     python_version = (
@@ -117,19 +161,19 @@ def start_stimulation_VEP(
     # Start run
     logger.info("Starting")
     stimulation.log(marker="start_run")
-    stimulation.set_text_field(name="messages", text="Starting...")
+    # stimulation.set_text_field(name="messages", text="Starting...")
     stimulation.run()
 
 
     # Wait to stop
     logger.info("Waiting for button press to stop")
-    stimulation.set_text_field(name="messages", text="Press button to stop.")
-    event.waitKeys(keyList=cfg["speller"]["controls"]["continue"])
+    # stimulation.set_text_field(name="messages", text="Press button to stop.")
+    event.waitKeys(keyList=cfg["stimulation"]["controls"]["continue"])
 
     # Stop run
     logger.info("Stopping")
     stimulation.log(marker="stop_run")
-    stimulation.set_text_field(name="messages", text="Stopping...")
+    # stimulation.set_text_field(name="messages", text="Stopping...")
     stimulation.run()
     stimulation.quit()
 
