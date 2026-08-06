@@ -17,6 +17,17 @@ import toml
 
 
 class Stimulation(object):
+    """
+    Object to present a stimulation on the screen
+
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+
+    """
     def __init__(
         self,
         screen_resolution: tuple[int, int],
@@ -27,11 +38,13 @@ class Stimulation(object):
         marker_stream_name: str = "marker-stream",
         quit_controls: list[str] = None,
         full_screen: bool = True,
+        stimulation_method: str = "VEP"
     ) -> None:
         self.screen_resolution = screen_resolution
         self.full_screen = full_screen
         self.refresh_rate = refresh_rate
         self.quit_controls = quit_controls
+        self.stimulation_method = stimulation_method
         self.cfg = cfg
         # Setup monitor
         self.monitor = monitors.Monitor(
@@ -64,22 +77,22 @@ class Stimulation(object):
         self.outlet = StreamOutlet(info)
 
         self.stim_duration = self.refresh_rate / 60 * 3 #duration of 50ms
-        self.rectangle = visual.rect.Rect(self.window,
+        
+        if self.stimulation_method == "VEP":
+                self.add_stimuli_VEP()
+
+
+
+    def add_stimuli_VEP(self):
+        self.stimuli = visual.rect.Rect(self.window,
                                           size = [500,500],
                                           name = 'rectangle',
                                         )
-
- 
-    def connect_to_decoder_lsl_stream(self) -> None:
-        name = self.cfg["streams"]["decoder_stream_name"]
-        logger.info(f'Connecting to decoder stream "{name}".')
-        self.decoder_sw = StreamWatcher(name=name)
-        self.decoder_sw.connect_to_stream()
-    
+        
     def run(
         self, 
     ) -> None:
-        
+        logger.info("Starting stimulation...")
         while True:
             stimulus_onset = random.randint(33,47) #random duration between 500ms and 750ms
 
@@ -92,11 +105,11 @@ class Stimulation(object):
 
                 #draw for 50 ms
                 if 0 < i < self.stim_duration:
-                    self.rectangle.draw()
+                    self.stimuli.draw()
                     self.log(marker="stimulation_presented")
 
                 if stimulus_onset < i < stimulus_onset + self.stim_duration:
-                    self.rectangle.draw()
+                    self.stimuli.draw()
                     self.log(marker="stimulation_presented")
 
                 self.window.flip()
@@ -110,6 +123,7 @@ class Stimulation(object):
         Quit the stimulation, close the window.
         """
         if self.window is not None:
+            logger.info("Closing window...")
             self.window.flip()
             self.window.setMouseVisible(True)
             self.window.close()
@@ -142,10 +156,11 @@ def start_stimulation_VEP(
         background_color=cfg["stimulation"]["screen"]["background_color"],
         marker_stream_name=cfg["streams"]["marker_stream_name"],
         quit_controls=cfg["stimulation"]["controls"]["quit"],
+        stimulation_method = "VEP",
         cfg=cfg,
         ) 
     
-
+    
     # Wait to start run
     logger.info("Waiting for button press to start")
     event.waitKeys(keyList=cfg["stimulation"]["controls"]["continue"])
@@ -164,17 +179,9 @@ def start_stimulation_VEP(
     # stimulation.set_text_field(name="messages", text="Starting...")
     stimulation.run()
 
-
-    # Wait to stop
-    logger.info("Waiting for button press to stop")
-    # stimulation.set_text_field(name="messages", text="Press button to stop.")
-    event.waitKeys(keyList=cfg["stimulation"]["controls"]["continue"])
-
     # Stop run
     logger.info("Stopping")
     stimulation.log(marker="stop_run")
-    # stimulation.set_text_field(name="messages", text="Stopping...")
-    stimulation.run()
     stimulation.quit()
 
     return 0

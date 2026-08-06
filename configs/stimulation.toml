@@ -1,4 +1,4 @@
-[speller.screen]
+[stimulation.screen]
 id = 1
 resolution = [1920, 1080]
 background_color = [ 0, 0, 0,]
@@ -20,6 +20,8 @@ colors = [ "black", "white",]
 continue = [ "c",]
 quit = [ "q", "escape",]
 
+[stimulation.methods]
+method = "VEP"
 
 [streams]
 marker_stream_name = "stimulation-stream"
