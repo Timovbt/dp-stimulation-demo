@@ -22,7 +22,20 @@ class Stimulation(object):
 
     Parameters
     ----------
-
+    screen_resolution: tuple[int, int]
+        Resolution of display used for stimulation
+    refresh_rate: int
+        refresh rate of display
+    cfg: dict
+        dict of toml config file
+    screen_id: int = 0,
+    background_color: tuple[float, float, float] (default: 0.0, 0.0, 0.0),
+    marker_stream_name: str = "marker-stream",
+    quit_controls: list[str] = None,
+    full_screen: bool = True
+        whether to use full screen
+    stimulation_method: str (default: 'VEP')
+        which way of stimulation to use
     Attributes
     ----------
 
@@ -84,6 +97,7 @@ class Stimulation(object):
 
 
     def add_stimuli_VEP(self):
+        """Add a single rectangle from psychopy for VEP stimulation"""
         self.stimuli = visual.rect.Rect(self.window,
                                           size = [500,500],
                                           name = 'rectangle',
@@ -92,6 +106,7 @@ class Stimulation(object):
     def run(
         self, 
     ) -> None:
+        """Main loop for stimulation"""
         logger.info("Starting stimulation...")
         while True:
             stimulus_onset = random.randint(33,47) #random duration between 500ms and 750ms
