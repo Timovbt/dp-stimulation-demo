@@ -31,6 +31,7 @@ class Stimulation(object):
     screen_id: int = 0,
     background_color: tuple[float, float, float] (default: 0.0, 0.0, 0.0),
     marker_stream_name: str = "marker-stream",
+    start_eval_marker: str = "start"
     quit_controls: list[str] = None,
     full_screen: bool = True
         whether to use full screen
@@ -49,6 +50,8 @@ class Stimulation(object):
         screen_id: int = 0,
         background_color: tuple[float, float, float] = (0.0, 0.0, 0.0),
         marker_stream_name: str = "marker-stream",
+        start_eval_marker: str = "start",
+        stim_marker: str = "stimulation_presented",
         quit_controls: list[str] = None,
         full_screen: bool = True,
         stimulation_method: str = "VEP"
@@ -58,6 +61,8 @@ class Stimulation(object):
         self.refresh_rate = refresh_rate
         self.quit_controls = quit_controls
         self.stimulation_method = stimulation_method
+        self.start_eval_marker = start_eval_marker
+        self.stim_marker = stim_marker
         self.cfg = cfg
         # Setup monitor
         self.monitor = monitors.Monitor(
@@ -108,6 +113,7 @@ class Stimulation(object):
     ) -> None:
         """Main loop for stimulation"""
         logger.info("Starting stimulation...")
+        self.log(marker = self.start_eval_marker)
         while True:
             stimulus_onset = random.randint(33,47) #random duration between 500ms and 750ms
 
@@ -121,11 +127,11 @@ class Stimulation(object):
                 #draw for 50 ms
                 if 0 < i < self.stim_duration:
                     self.stimuli.draw()
-                    self.log(marker="stimulation_presented")
+                    self.log(marker = self.stim_marker)
 
                 if stimulus_onset < i < stimulus_onset + self.stim_duration:
                     self.stimuli.draw()
-                    self.log(marker="stimulation_presented")
+                    self.log(marker = self.stim_marker)
 
                 self.window.flip()
 
@@ -170,6 +176,8 @@ def start_stimulation_VEP(
         full_screen=cfg["stimulation"]["screen"]["full_screen"],
         background_color=cfg["stimulation"]["screen"]["background_color"],
         marker_stream_name=cfg["streams"]["marker_stream_name"],
+        stim_marker = cfg["streams"]["stim_marker"],
+        start_eval_marker = cfg["streams"]["start_eval_marker"],
         quit_controls=cfg["stimulation"]["controls"]["quit"],
         stimulation_method = "VEP",
         cfg=cfg,

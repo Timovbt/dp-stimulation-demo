@@ -24,6 +24,7 @@ quit = [ "q", "escape",]
 method = "VEP"
 
 [streams]
-marker_stream_name = "stimulation-stream"
-decoder_stream_name = "decoder-stream"
-
+marker_stream_name = 'stimulation-stream'
+decoder_stream_name = 'decoder-stream'
+start_eval_marker = 'stimulation_start'
+stim_marker = 'stimulation_presented'
