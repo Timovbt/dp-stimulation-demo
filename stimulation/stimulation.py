@@ -4,12 +4,11 @@ import random
 import sys
 import threading
 import time
+import pylsl
 from pathlib import Path
 from fire import Fire
 import psychopy
 from psychopy import core, event, misc, monitors, visual
-# The modules logger is used everywhere necessary. Note this logger will usually only have a NetworkHandler.
-# If you want to log to the console, you need to add a StreamHandler to it.
 from stimulation.utils.logging import logger
 from pylsl import StreamInfo, StreamOutlet
 from dareplane_utils.stream_watcher.lsl_stream_watcher import StreamWatcher
@@ -50,8 +49,8 @@ class Stimulation(object):
         screen_id: int = 0,
         background_color: tuple[float, float, float] = (0.0, 0.0, 0.0),
         marker_stream_name: str = "marker-stream",
-        start_eval_marker: str = "start",
-        stim_marker: str = "stimulation_presented",
+        start_eval_marker: int =  0,
+        stim_marker: int = 1,
         quit_controls: list[str] = None,
         full_screen: bool = True,
         stimulation_method: str = "VEP"
@@ -88,8 +87,8 @@ class Stimulation(object):
             name=marker_stream_name,
             type="Markers",
             channel_count=1,
-            nominal_srate=0,
-            channel_format="string",
+            nominal_srate=0.0,
+            channel_format=pylsl.cf_int8,
             source_id=marker_stream_name,
         )
         self.outlet = StreamOutlet(info)
@@ -151,7 +150,7 @@ class Stimulation(object):
        
     def log(
         self,
-        marker: str,
+        marker: int,
     ) -> None:
         """
         Log a marker to the marker stream.
@@ -192,19 +191,19 @@ def start_stimulation_VEP(
     python_version = (
         f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     )
-    stimulation.log(
-        marker=f"version;python={python_version};psychopy={psychopy.__version__}"
-    )
+    # stimulation.log(
+    #     marker=f"version;python={python_version};psychopy={psychopy.__version__}"
+    # )
 
     # Start run
     logger.info("Starting")
-    stimulation.log(marker="start_run")
+    # stimulation.log(marker="start_run")
     # stimulation.set_text_field(name="messages", text="Starting...")
     stimulation.run()
 
     # Stop run
     logger.info("Stopping")
-    stimulation.log(marker="stop_run")
+    # stimulation.log(marker="stop_run")
     stimulation.quit()
 
     return 0
