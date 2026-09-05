@@ -5,9 +5,10 @@ background_color = [ 0, 0, 0,]
 refresh_rate_hz = 60
 full_screen = false
 
-[stimulaton.timing]
-flash_duration = 50
-interval = 500
+[stimulation.timing]
+n_flashes = 500
+flash_duration = 0
+interval = [500,750] #specify ISI (Tmin,Tmax)
 
 [speller.stt]
 enabled = false

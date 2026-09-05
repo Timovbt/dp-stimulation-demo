@@ -53,15 +53,21 @@ class Stimulation(object):
         stim_marker: int = 1,
         quit_controls: list[str] = None,
         full_screen: bool = True,
-        stimulation_method: str = "VEP"
+        stimulation_method: str = "VEP",
+        n_flashes: int = 200,
+        flash_duration: int = 0,
+        interval: list = [500,750]
     ) -> None:
         self.screen_resolution = screen_resolution
         self.full_screen = full_screen
         self.refresh_rate = refresh_rate
         self.quit_controls = quit_controls
         self.stimulation_method = stimulation_method
+        self.n_flashes = n_flashes
+        self.flash_duration= flash_duration
         self.start_eval_marker = start_eval_marker
         self.stim_marker = stim_marker
+        self.interval_min,self.interval_max = interval
         self.cfg = cfg
         # Setup monitor
         self.monitor = monitors.Monitor(
@@ -97,6 +103,7 @@ class Stimulation(object):
         
         if self.stimulation_method == "VEP":
                 self.add_stimuli_VEP()
+                self.add_fixation()
 
 
 
@@ -106,6 +113,14 @@ class Stimulation(object):
                                           size = [500,500],
                                           name = 'rectangle',
                                         )
+
+    def add_fixation(self):
+        self.fixation = visual.ShapeStim(win=self.window,
+                                         vertices= "cross",
+                                         size= (30,30),
+                                         fillColor= "black",
+                                         lineColor="black"
+                                         )
         
     def run(
         self, 
@@ -113,27 +128,20 @@ class Stimulation(object):
         """Main loop for stimulation"""
         logger.info("Starting stimulation...")
         self.log(marker = self.start_eval_marker)
-        while True:
-            stimulus_onset = random.randint(33,47) #random duration between 500ms and 750ms
-
-            for i in range(self.refresh_rate):
-                # Check quiting
-                if i % 60 == 0:
-                    if len(event.getKeys(keyList=self.quit_controls)) > 0:
-                        self.quit()
-                        break
-
-                #draw for 50 ms
-                if 0 < i < self.stim_duration:
-                    self.stimuli.draw()
-                    self.log(marker = self.stim_marker)
-
-                if stimulus_onset < i < stimulus_onset + self.stim_duration:
-                    self.stimuli.draw()
-                    self.log(marker = self.stim_marker)
-
-                self.window.flip()
-
+        # self.stimuli.setAutoDraw(False)
+        # core.wait(5)
+        self.fixation.setAutoDraw(True)
+        for i in range(self.n_flashes):
+            if len(event.getKeys(keyList=self.quit_controls)) > 0:
+                self.quit()
+                break
+            random_time = random.uniform(self.interval_min,self.interval_max)
+            self.stimuli.draw()
+            self.window.callOnFlip(self.log,self.stim_marker)
+            self.window.flip() #show stimuli
+            core.wait(self.flash_duration)
+            self.window.flip() #clear stimuli
+            core.wait(random_time/1000) #ISI
             
 
     def quit(
@@ -179,6 +187,9 @@ def start_stimulation_VEP(
         start_eval_marker = cfg["streams"]["start_eval_marker"],
         quit_controls=cfg["stimulation"]["controls"]["quit"],
         stimulation_method = "VEP",
+        n_flashes=cfg["stimulation"]["timing"]["n_flashes"],
+        flash_duration=cfg["stimulation"]["timing"]["flash_duration"],
+        interval =cfg["stimulation"]["timing"]["interval"],
         cfg=cfg,
         ) 
     
