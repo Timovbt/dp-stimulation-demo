@@ -5,6 +5,10 @@ background_color = [ 0, 0, 0,]
 refresh_rate_hz = 60
 full_screen = false
 
+[stimulation.stimuli]
+color = "white"       #can be 'str' or other formats used by PsychoPy
+size = [500,500]      #specified in pixels (stimuli centered around 0.0)
+
 [stimulation.timing]
 n_flashes = 500
 flash_duration = 0

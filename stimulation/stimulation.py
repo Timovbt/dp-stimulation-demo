@@ -52,6 +52,8 @@ class Stimulation(object):
         start_eval_marker: int =  0,
         stim_marker: int = 1,
         quit_controls: list[str] = None,
+        stim_size: list = [500,500],
+        stim_color = "white",
         full_screen: bool = True,
         stimulation_method: str = "VEP",
         n_flashes: int = 200,
@@ -62,6 +64,8 @@ class Stimulation(object):
         self.full_screen = full_screen
         self.refresh_rate = refresh_rate
         self.quit_controls = quit_controls
+        self.stim_size = stim_size
+        self.stim_color = stim_color
         self.stimulation_method = stimulation_method
         self.n_flashes = n_flashes
         self.flash_duration= flash_duration
@@ -110,8 +114,10 @@ class Stimulation(object):
     def add_stimuli_VEP(self):
         """Add a single rectangle from psychopy for VEP stimulation"""
         self.stimuli = visual.rect.Rect(self.window,
-                                          size = [500,500],
+                                          size = self.stim_size,
+                                          units='pix',
                                           name = 'rectangle',
+                                          color = self.stim_color
                                         )
 
     def add_fixation(self):
@@ -186,6 +192,8 @@ def start_stimulation_VEP(
         stim_marker = cfg["streams"]["stim_marker"],
         start_eval_marker = cfg["streams"]["start_eval_marker"],
         quit_controls=cfg["stimulation"]["controls"]["quit"],
+        stim_size=cfg['stimulation']['stimuli']['size'],
+        stim_color=cfg['stimulation']['stimuli']['color'],
         stimulation_method = "VEP",
         n_flashes=cfg["stimulation"]["timing"]["n_flashes"],
         flash_duration=cfg["stimulation"]["timing"]["flash_duration"],
