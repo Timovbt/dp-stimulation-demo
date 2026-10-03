@@ -1,0 +1,5 @@
+dareplane_utils==0.0.23
+fire==0.7.1
+psychopy==2026.2.0
+pylsl==1.18.2
+toml==0.10.2

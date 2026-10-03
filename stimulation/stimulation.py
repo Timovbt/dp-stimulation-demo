@@ -57,7 +57,7 @@ class Stimulation(object):
         full_screen: bool = True,
         stimulation_method: str = "VEP",
         n_flashes: int = 200,
-        flash_duration: int = 0,
+        flash_duration: int = 50,
         interval: list = [500,750]
     ) -> None:
         self.screen_resolution = screen_resolution
@@ -135,7 +135,7 @@ class Stimulation(object):
         logger.info("Starting stimulation...")
         self.log(marker = self.start_eval_marker)
         # self.stimuli.setAutoDraw(False)
-        # core.wait(5)
+        core.wait(3)
         self.fixation.setAutoDraw(True)
         for i in range(self.n_flashes):
             if len(event.getKeys(keyList=self.quit_controls)) > 0:
@@ -145,7 +145,7 @@ class Stimulation(object):
             self.stimuli.draw()
             self.window.callOnFlip(self.log,self.stim_marker)
             self.window.flip() #show stimuli
-            core.wait(self.flash_duration)
+            core.wait(self.flash_duration/1000)
             self.window.flip() #clear stimuli
             core.wait(random_time/1000) #ISI
             
