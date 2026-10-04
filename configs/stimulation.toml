@@ -8,6 +8,7 @@ full_screen = false
 [stimulation.stimuli]
 color = "white"       #can be 'str' or other formats used by PsychoPy
 size = [500,500]      #specified in pixels (stimuli centered around 0.0)
+fixation_cross_size = [30,30]
 
 [stimulation.timing]
 n_flashes = 500
