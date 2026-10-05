@@ -53,7 +53,7 @@ class Stimulation(object):
         stim_marker: int = 1,
         quit_controls: list[str] = None,
         stim_size: list = [500,500],
-        fixation_cross_size:list=[30,30],
+        fixation_cross_size:int = 30,
         stim_color = "white",
         full_screen: bool = True,
         stimulation_method: str = "VEP",
