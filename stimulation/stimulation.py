@@ -137,7 +137,7 @@ class Stimulation(object):
         logger.info("Starting stimulation...")
         self.log(marker = self.start_eval_marker)
         # self.stimuli.setAutoDraw(False)
-        core.wait(3)
+        core.wait(2)
         self.fixation.setAutoDraw(True)
         for i in range(self.n_flashes):
             if len(event.getKeys(keyList=self.quit_controls)) > 0:
@@ -202,13 +202,15 @@ def start_stimulation_VEP(
         stimulation_method = "VEP",
         n_flashes=cfg["stimulation"]["timing"]["n_flashes"],
         flash_duration=cfg["stimulation"]["timing"]["flash_duration"],
-        interval =cfg["stimulation"]["timing"]["interval"],
+        interval =cfg["stimulation"]["timing"]["random_interval"],
         cfg=cfg,
         ) 
     
     
     # Wait to start run
     logger.info("Waiting for button press to start")
+    stimulation.fixation.draw()
+    stimulation.window.flip()
     event.waitKeys(keyList=cfg["stimulation"]["controls"]["continue"])
 
     # Log info
