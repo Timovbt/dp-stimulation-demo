@@ -4,6 +4,7 @@ import random
 import sys
 import threading
 import time
+import numpy as np
 import pylsl
 from pathlib import Path
 from fire import Fire
@@ -55,6 +56,8 @@ class Stimulation(object):
         stim_size: list = [500,500],
         fixation_cross_size:int = 30,
         stim_color = "white",
+        stim_color_A = "red",
+        stim_color_B = "yellow",
         full_screen: bool = True,
         stimulation_method: str = "VEP",
         n_flashes: int = 200,
@@ -65,8 +68,12 @@ class Stimulation(object):
         self.full_screen = full_screen
         self.refresh_rate = refresh_rate
         self.quit_controls = quit_controls
+
         self.stim_size = stim_size
         self.stim_color = stim_color
+        self.stim_color_A = stim_color_A
+        self.stim_color_B = stim_color_B
+
         self.fixation_cross_size = fixation_cross_size
         self.stimulation_method = stimulation_method
         self.n_flashes = n_flashes
@@ -108,8 +115,21 @@ class Stimulation(object):
         self.stim_duration = self.refresh_rate / 60 * 3 #duration of 50ms
         
         if self.stimulation_method == "VEP":
-                self.add_stimuli_VEP()
-                self.add_fixation()
+            self.VEP = True
+            self.ODDBALL = False
+            self.add_stimuli_VEP()
+            self.add_fixation()
+
+        elif self.stimulation_method == "ODDBALL":
+            self.VEP = False
+            self.ODDBALL = True
+            self.add_stimuli_oddball()
+            self.add_fixation()
+
+        else:
+            logger.error(f'Stimulation method {self.stimulation_method} does not exist')
+            raise Exception(f'Stimulation method {self.stimulation_method} does not exist')
+             
 
 
 
@@ -121,6 +141,21 @@ class Stimulation(object):
                                           name = 'rectangle',
                                           color = self.stim_color
                                         )
+
+    def add_stimuli_oddball(self):
+        """Add a two colored rectangles from psychopy for Oddball stimulation"""
+        self.stim_A = visual.rect.Rect(self.window,
+                                                  size = self.stim_size,
+                                                  units='pix',
+                                                  name = 'rectangle',
+                                                  color = self.stim_color_A
+                                                )
+        self.stim_B = visual.rect.Rect(self.window,
+                                                  size = self.stim_size,
+                                                  units='pix',
+                                                  name = 'rectangle',
+                                                  color = self.stim_color_B
+                                                )
 
     def add_fixation(self):
         self.fixation = visual.ShapeStim(win=self.window,
@@ -136,23 +171,45 @@ class Stimulation(object):
         """Main loop for stimulation"""
         logger.info("Starting stimulation...")
         self.log(marker = self.start_eval_marker)
-        # self.stimuli.setAutoDraw(False)
+
         core.wait(2)
+
         self.fixation.setAutoDraw(True)
-        for i in range(self.n_flashes):
-            if len(event.getKeys(keyList=self.quit_controls)) > 0:
-                self.quit()
-                break
+        if self.VEP:
+            for i in range(self.n_flashes):
+                if len(event.getKeys(keyList=self.quit_controls)) > 0:
+                    self.quit()
+                    break
 
-            random_time = random.uniform(self.interval_min,self.interval_max)
-            self.stimuli.draw()
-            self.window.callOnFlip(self.log,self.stim_marker)
-            self.window.flip() #show stimuli
-            core.wait(self.flash_duration/1000)
-            self.window.flip() #clear stimuli
+                random_time = random.uniform(self.interval_min,self.interval_max)
 
-            core.wait(random_time/1000) #ISI
+                self.stimuli.draw()
+                self.window.callOnFlip(self.log,self.stim_marker)
+                self.window.flip() #show stimuli
+
+                core.wait(self.flash_duration/1000)
+                self.window.flip() #clear stimuli
+                core.wait(random_time/1000) #ISI
+
+        elif self.ODDBALL:
+            for i in range(self.n_flashes):
+                            if len(event.getKeys(keyList=self.quit_controls)) > 0:
+                                self.quit()
+                                break
             
+                            random_time = random.uniform(self.interval_min,self.interval_max)
+                            choice = np.random.binomial(n=1, p=0.70)
+                            if choice:  
+                                self.stim_A.draw()
+                            else: 
+                                self.stim_B.draw()
+                            self.window.callOnFlip(self.log,self.stim_marker)
+                            self.window.flip() #show stimuli
+            
+                            core.wait(self.flash_duration/1000)
+                            self.window.flip() #clear stimuli
+                            core.wait(random_time/1000) #ISI
+                
 
     def quit(
         self,
@@ -199,14 +256,15 @@ def start_stimulation_VEP(
         stim_size=cfg['stimulation']['stimuli']['size'],
         fixation_cross_size=cfg['stimulation']['stimuli']['fixation_cross_size'],
         stim_color=cfg['stimulation']['stimuli']['color'],
-        stimulation_method = "VEP",
+        stim_color_A=cfg['stimulation']['stimuli']['color_A'],
+        stim_color_B=cfg['stimulation']['stimuli']['color_B'],
+        stimulation_method = cfg['stimulation']['methods']['method'],
         n_flashes=cfg["stimulation"]["timing"]["n_flashes"],
         flash_duration=cfg["stimulation"]["timing"]["flash_duration"],
         interval =cfg["stimulation"]["timing"]["random_interval"],
         cfg=cfg,
         ) 
-    
-    
+
     # Wait to start run
     logger.info("Waiting for button press to start")
     stimulation.fixation.draw()
@@ -217,22 +275,18 @@ def start_stimulation_VEP(
     python_version = (
         f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     )
-    # stimulation.log(
-    #     marker=f"version;python={python_version};psychopy={psychopy.__version__}"
-    # )
 
     # Start run
     logger.info("Starting")
-    # stimulation.log(marker="start_run")
-    # stimulation.set_text_field(name="messages", text="Starting...")
+
     stimulation.run()
 
     # Stop run
     logger.info("Stopping")
-    # stimulation.log(marker="stop_run")
     stimulation.quit()
 
     return 0
+
 
 if __name__ == "__main__":
     Fire(start_stimulation_VEP)
