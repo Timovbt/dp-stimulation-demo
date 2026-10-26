@@ -53,6 +53,8 @@ class Stimulation(object):
         start_eval_marker: int =  0,
         stim_marker: int = 1,
         quit_controls: list[str] = None,
+        pause_controls: list[str] = None,
+        continue_controls: list[str] = None,
         stim_size: list = [500,500],
         fixation_cross_size:int = 30,
         stim_color = "white",
@@ -68,6 +70,8 @@ class Stimulation(object):
         self.full_screen = full_screen
         self.refresh_rate = refresh_rate
         self.quit_controls = quit_controls
+        self.pause_controls = pause_controls
+        self.continue_controls = continue_controls
 
         self.stim_size = stim_size
         self.stim_color = stim_color
@@ -180,7 +184,8 @@ class Stimulation(object):
                 if len(event.getKeys(keyList=self.quit_controls)) > 0:
                     self.quit()
                     break
-
+                elif len(event.getKeys(keyList=self.pause_controls)) > 0:
+                    event.waitKeys(keyList=self.continue_controls)
                 random_time = random.uniform(self.interval_min,self.interval_max)
 
                 self.stimuli.draw()
@@ -253,6 +258,8 @@ def start_stimulation_VEP(
         stim_marker = cfg["streams"]["stim_marker"],
         start_eval_marker = cfg["streams"]["start_eval_marker"],
         quit_controls=cfg["stimulation"]["controls"]["quit"],
+        continue_controls =cfg["stimulation"]["controls"]["continue"],
+        pause_controls=cfg["stimulation"]["controls"]["pause"],
         stim_size=cfg['stimulation']['stimuli']['size'],
         fixation_cross_size=cfg['stimulation']['stimuli']['fixation_cross_size'],
         stim_color=cfg['stimulation']['stimuli']['color'],

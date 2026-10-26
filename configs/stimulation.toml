@@ -30,6 +30,7 @@ colors = [ "black", "white",]
 [stimulation.controls]
 continue = [ "c",]
 quit = [ "q", "escape",]
+pause = ["p"]
 
 [stimulation.methods]
 method = "VEP"
