@@ -206,9 +206,11 @@ class Stimulation(object):
                             choice = np.random.binomial(n=1, p=0.70)
                             if choice:  
                                 self.stim_A.draw()
+                                self.window.callOnFlip(self.log,1)
                             else: 
                                 self.stim_B.draw()
-                            self.window.callOnFlip(self.log,self.stim_marker)
+                                self.window.callOnFlip(self.log,2)
+                            
                             self.window.flip() #show stimuli
             
                             core.wait(self.flash_duration/1000)
@@ -243,7 +245,7 @@ class Stimulation(object):
         self.outlet.push_sample([marker])
 
 
-def start_stimulation_VEP(
+def start_stimulation_ODDBALL(
     config_path: Path = Path("./configs/stimulation.toml"),  # relative to the project root
     ) -> int:
 
@@ -265,7 +267,7 @@ def start_stimulation_VEP(
         stim_color=cfg['stimulation']['stimuli']['color'],
         stim_color_A=cfg['stimulation']['stimuli']['color_A'],
         stim_color_B=cfg['stimulation']['stimuli']['color_B'],
-        stimulation_method = cfg['stimulation']['methods']['method'],
+        stimulation_method = "ODDBALL",
         n_flashes=cfg["stimulation"]["timing"]["n_flashes"],
         flash_duration=cfg["stimulation"]["timing"]["flash_duration"],
         interval =cfg["stimulation"]["timing"]["random_interval"],
@@ -293,6 +295,58 @@ def start_stimulation_VEP(
     stimulation.quit()
 
     return 0
+
+def start_stimulation_VEP(
+    config_path: Path = Path("./configs/stimulation.toml"),  # relative to the project root
+    ) -> int:
+
+    cfg = toml.load(config_path)
+    stimulation = Stimulation( 
+        screen_resolution=cfg["stimulation"]["screen"]["resolution"],
+        refresh_rate=cfg["stimulation"]["screen"]["refresh_rate_hz"],
+        screen_id=cfg["stimulation"]["screen"]["id"],
+        full_screen=cfg["stimulation"]["screen"]["full_screen"],
+        background_color=cfg["stimulation"]["screen"]["background_color"],
+        marker_stream_name=cfg["streams"]["marker_stream_name"],
+        stim_marker = cfg["streams"]["stim_marker"],
+        start_eval_marker = cfg["streams"]["start_eval_marker"],
+        quit_controls=cfg["stimulation"]["controls"]["quit"],
+        continue_controls =cfg["stimulation"]["controls"]["continue"],
+        pause_controls=cfg["stimulation"]["controls"]["pause"],
+        stim_size=cfg['stimulation']['stimuli']['size'],
+        fixation_cross_size=cfg['stimulation']['stimuli']['fixation_cross_size'],
+        stim_color=cfg['stimulation']['stimuli']['color'],
+        stim_color_A=cfg['stimulation']['stimuli']['color_A'],
+        stim_color_B=cfg['stimulation']['stimuli']['color_B'],
+        stimulation_method = "VEP",
+        n_flashes=cfg["stimulation"]["timing"]["n_flashes"],
+        flash_duration=cfg["stimulation"]["timing"]["flash_duration"],
+        interval =cfg["stimulation"]["timing"]["random_interval"],
+        cfg=cfg,
+        ) 
+
+    # Wait to start run
+    logger.info("Waiting for button press to start")
+    stimulation.fixation.draw()
+    stimulation.window.flip()
+    event.waitKeys(keyList=cfg["stimulation"]["controls"]["continue"])
+
+    # Log info
+    python_version = (
+        f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    )
+
+    # Start run
+    logger.info("Starting")
+
+    stimulation.run()
+
+    # Stop run
+    logger.info("Stopping")
+    stimulation.quit()
+
+    return 0
+
 
 
 if __name__ == "__main__":

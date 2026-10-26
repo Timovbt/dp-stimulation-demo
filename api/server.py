@@ -1,6 +1,6 @@
 from fire import Fire
 
-from stimulation.stimulation import start_stimulation_VEP
+from stimulation.stimulation import start_stimulation_VEP,start_stimulation_ODDBALL
 from stimulation.utils.logging import logger
 
 from dareplane_utils.default_server.server import DefaultServer
@@ -11,7 +11,7 @@ def main(port: int = 8081, ip: str = "127.0.0.1", loglevel: int = 10):
 
     pcommand_map = {
         "VEP": start_stimulation_VEP,
-        # "ODDBALL":
+        "ODDBALL":start_stimulation_ODDBALL,
     }
 
     server = DefaultServer(
