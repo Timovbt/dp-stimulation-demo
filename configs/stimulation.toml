@@ -32,7 +32,7 @@ continue = [ "c",]
 quit = [ "q", "escape",]
 
 [stimulation.methods]
-method = "ODDBALL"
+method = "VEP"
 
 [streams]
 marker_stream_name = 'stimulation_marker_stream'
