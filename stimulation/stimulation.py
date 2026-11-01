@@ -55,6 +55,7 @@ class Stimulation(object):
         quit_controls: list[str] = None,
         pause_controls: list[str] = None,
         continue_controls: list[str] = None,
+        reset_controls: list[str]= None,
         stim_size: list = [500,500],
         fixation_cross_size:int = 30,
         stim_color = "white",
@@ -72,6 +73,7 @@ class Stimulation(object):
         self.quit_controls = quit_controls
         self.pause_controls = pause_controls
         self.continue_controls = continue_controls
+        self.reset_controls = reset_controls
 
         self.stim_size = stim_size
         self.stim_color = stim_color
@@ -186,6 +188,10 @@ class Stimulation(object):
                     break
                 elif len(event.getKeys(keyList=self.pause_controls)) > 0:
                     event.waitKeys(keyList=self.continue_controls)
+                    logger.info("pressed Pause")
+                elif len(event.getKeys(keyList=self.reset_controls)) > 0: #reset
+                    self.log(3)
+                    logger.info("pressed Reset")
                 random_time = random.uniform(self.interval_min,self.interval_max)
 
                 self.stimuli.draw()
@@ -198,25 +204,29 @@ class Stimulation(object):
 
         elif self.ODDBALL:
             for i in range(self.n_flashes):
-                            if len(event.getKeys(keyList=self.quit_controls)) > 0:
-                                self.quit()
-                                break
-            
-                            random_time = random.uniform(self.interval_min,self.interval_max)
-                            choice = np.random.binomial(n=1, p=0.70)
-                            if choice:  
-                                self.stim_A.draw()
-                                self.window.callOnFlip(self.log,1)
-                            else: 
-                                self.stim_B.draw()
-                                self.window.callOnFlip(self.log,2)
-                            
-                            self.window.flip() #show stimuli
-            
-                            core.wait(self.flash_duration/1000)
-                            self.window.flip() #clear stimuli
-                            core.wait(random_time/1000) #ISI
+                if len(event.getKeys(keyList=self.quit_controls)) > 0: #quit
+                    self.quit()
+                    break
+                elif len(event.getKeys(keyList=self.pause_controls)) > 0: #pause
+                    event.waitKeys(keyList=self.continue_controls)
+                elif len(event.getKeys(keyList=self.reset_controls)) > 0: #reset
+                    self.log(3)
+
+                random_time = random.uniform(self.interval_min,self.interval_max)
+                choice = np.random.binomial(n=1, p=0.70)
+                if choice:  
+                    self.stim_A.draw()
+                    self.window.callOnFlip(self.log,1)
+                else: 
+                    self.stim_B.draw()
+                    self.window.callOnFlip(self.log,2)
                 
+                self.window.flip() #show stimuli
+
+                core.wait(self.flash_duration/1000)
+                self.window.flip() #clear stimuli
+                core.wait(random_time/1000) #ISI
+    
 
     def quit(
         self,
@@ -262,6 +272,7 @@ def start_stimulation_ODDBALL(
         quit_controls=cfg["stimulation"]["controls"]["quit"],
         continue_controls =cfg["stimulation"]["controls"]["continue"],
         pause_controls=cfg["stimulation"]["controls"]["pause"],
+        reset_controls=cfg["stimulation"]["controls"]["reset"],
         stim_size=cfg['stimulation']['stimuli']['size'],
         fixation_cross_size=cfg['stimulation']['stimuli']['fixation_cross_size'],
         stim_color=cfg['stimulation']['stimuli']['color'],

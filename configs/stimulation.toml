@@ -31,12 +31,13 @@ colors = [ "black", "white",]
 continue = [ "c",]
 quit = [ "q", "escape",]
 pause = ["p"]
+reset = ["r"]
 
 [stimulation.methods]
 method = "VEP"
 
 [streams]
-marker_stream_name = 'stimulation_marker_stream'
+marker_stream_name = 'stimulation-marker-stream'
 decoder_stream_name = 'decoder-stream'
 start_eval_marker = 0
 stim_marker = 1
