@@ -176,7 +176,7 @@ class Stimulation(object):
     ) -> None:
         """Main loop for stimulation"""
         logger.info("Starting stimulation...")
-        self.log(marker = self.start_eval_marker)
+        # self.log(marker = self.start_eval_marker)
 
         core.wait(2)
 
@@ -212,18 +212,18 @@ class Stimulation(object):
                 elif len(event.getKeys(keyList=self.reset_controls)) > 0: #reset
                     self.log(3)
 
-                random_time = random.uniform(self.interval_min,self.interval_max)
-                choice = np.random.binomial(n=1, p=0.70)
+                random_time = random.uniform(700,900)
+                choice = np.random.binomial(n=1, p=0.80)
                 if choice:  
                     self.stim_A.draw()
-                    self.window.callOnFlip(self.log,1)
+                    self.window.callOnFlip(self.log,2)
                 else: 
                     self.stim_B.draw()
-                    self.window.callOnFlip(self.log,2)
+                    self.window.callOnFlip(self.log,1)
                 
                 self.window.flip() #show stimuli
 
-                core.wait(self.flash_duration/1000)
+                core.wait(250/1000)
                 self.window.flip() #clear stimuli
                 core.wait(random_time/1000) #ISI
     
